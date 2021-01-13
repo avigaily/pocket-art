@@ -1,0 +1,163 @@
+body {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.app {
+  min-height: 100%;
+  min-width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  background-color: purple;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  font-family: Papyrus;
+  color: white;
+}
+
+h1 {
+  margin: 30px auto;
+}
+
+main {
+  padding-top: 30px;
+  flex-grow: 1;
+  background-color: rgb(34, 31, 36);
+  color: white;
+}
+
+/* user details */
+
+input {
+  height: 60px;
+  width: 260px;
+  text-align: center;
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  border: none;
+  background-color: blueviolet;
+  color: white;
+}
+
+::placeholder {
+  color: ghostwhite;
+}
+
+button {
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid white;
+  width: 110px;
+  background-color: purple;
+  font-size: 1.2rem;
+  color: white;
+}
+
+/* create game */
+
+.create-game {
+  font-size: 1.6rem;
+}
+
+.connected {
+  width: 400px;
+  padding: 0px;
+  list-style: none;
+  margin: 50px auto;
+}
+
+.connected > li > span {
+  margin-inline-end: 40px;
+}
+
+.message {
+  background-color: blueviolet;
+  width: 400px;
+  margin: 30px auto;
+  padding: 20px;
+}
+
+.message>p{
+  margin-top: 0;
+}
+
+/* board */
+
+.board > * {
+  margin-top: 0;
+}
+
+.board {
+  padding-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.description {
+  margin-bottom: 0px;
+  border-color: mediumpurple;
+  border-radius: 5px;
+  color: white;
+  background-color: rebeccapurple;
+  width: 400px;
+  border: solid 2px #051e52;
+  height: 60px;
+}
+
+.opponents {
+  display: flex;
+  justify-content: space-evenly;
+  width: 500px;
+  margin-bottom: 30px;
+}
+
+.user {
+  background-color: darkmagenta;
+  border: 1px solid purple;
+  width: 80px;
+  height: 90px;
+}
+
+.hidden-cards {
+  color: mediumpurple;
+  margin: 20px auto;
+  font-size: 2rem;
+}
+
+.cards {
+  display: flex;
+  justify-content: space-between;
+  height: 450px;
+  width: 860px;
+}
+
+.card {
+  background-color: rgb(44, 10, 28);
+  width: 200px;
+  height: 250px;
+  border: 8px solid black;
+  border-radius: 8px;
+}
+
+.card > img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.current-user {
+  margin-bottom: 30px;
+  width: 950px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.current-card {
+  border: 1px solid grey;
+}
