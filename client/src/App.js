@@ -18,40 +18,44 @@ class App extends React.Component {
 
   componentDidMount() {
     const { endpoint } = this.state;
-    // Made a connection with server
+    // connect to server
     const socket = socketIOClient(endpoint);
     socket.on("connected", data => {
       this.setState({ socket: socket })
     });
   }
 
+  //todo: res should get user so the name shows
+  //app.js gets registration details if it was successfull
   registrationConfirmation = (res) => {
-    var {user} = res
-    // If registration successfully redirect to player list
     this.setState({ isRegistered: res.flag});
   };
-
+  
+  //app.js gets game details if initiation was successfull
   gameStartConfirmation = (data) => {
-    // If select opponent player then start game and redirect to game play
-    this.setState({ isGameStarted: data.status, gameId: data.game_id, gameData: data.game_data });
-    console.log('game start');
+    this.setState({ isGameStarted: true, gameId: data.game_id, gameData: data.game_data });
+    //each socket needs to join
+    this.state.socket.emit('joinGame',  data.game_id);
   };
 
-  opponentLeft = (data) => {
-    // If opponent left then get back from game play to player screen
-    alert("Opponent Left");
-    this.setState({ isGameStarted: false, gameId: null, gameData: null });
-  };
+  //todo: handle opponent left, pass function as props to <Board>
+  // opponentLeft = (data) => {
+  //   // If opponent left then get back from game to create screen
+  //   alert("Opponent Left");
+  //   this.setState({ isGameStarted: false, gameId: null, gameData: null });
+  // };
 
   render() {
-    const { user, socket, isGameStarted, gameData , isRegistered} = this.state;
+    const { socket, isGameStarted, gameData , isRegistered} = this.state;
     return !socket?'loading':(
       <div className="app">
         <header>
           <h1>Pocket Art</h1>
         </header>
         <main>
-          {/* if no name entered */ /* else- if no game in action  */ /* else */}
+          {/* if no name entered < GetUserDetails >
+              else  if no game in action < CreateGame >
+                    else- < Board > */}
           {
             !isRegistered ? < GetUserDetails socket={socket} registrationConfirmation={this.registrationConfirmation} />
             : !isGameStarted ? < CreateGame socket={socket} gameStartConfirmation={this.gameStartConfirmation} />
