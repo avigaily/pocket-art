@@ -25,17 +25,16 @@ class App extends React.Component {
     });
   }
 
-  //todo: res should get user so the name shows
   //app.js gets registration details if it was successfull
   registrationConfirmation = (res) => {
-    this.setState({ isRegistered: res.flag});
+    this.setState({ isRegistered: res.flag, user: res.user });
   };
-  
+
   //app.js gets game details if initiation was successfull
-  gameStartConfirmation = (data) => {
-    this.setState({ isGameStarted: true, gameId: data.game_id, gameData: data.game_data });
+  gameStartConfirmation = (gameData) => {
+    this.setState({ isGameStarted: true, gameId: gameData.id, gameData: gameData });
     //each socket needs to join
-    this.state.socket.emit('joinGame',  data.game_id);
+    this.state.socket.emit('joinGame', gameData.id);
   };
 
   //todo: handle opponent left, pass function as props to <Board>
@@ -46,8 +45,8 @@ class App extends React.Component {
   // };
 
   render() {
-    const { socket, isGameStarted, gameData , isRegistered} = this.state;
-    return !socket?'loading':(
+    const { socket, isGameStarted, gameData, isRegistered, user } = this.state;
+    return !socket ? 'loading' : (
       <div className="app">
         <header>
           <h1>Pocket Art</h1>
@@ -58,8 +57,8 @@ class App extends React.Component {
                     else- < Board > */}
           {
             !isRegistered ? < GetUserDetails socket={socket} registrationConfirmation={this.registrationConfirmation} />
-            : !isGameStarted ? < CreateGame socket={socket} gameStartConfirmation={this.gameStartConfirmation} />
-              : < Board socket={socket} gameData={gameData}  />
+              : !isGameStarted ? < CreateGame socket={socket} gameStartConfirmation={this.gameStartConfirmation} />
+                : < Board socket={socket} gameData={gameData} user={user} />
           }
         </main>
       </div>

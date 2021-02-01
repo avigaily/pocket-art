@@ -22,7 +22,6 @@ class GetUserDetails extends React.Component {
         this.props.socket.emit('checkUserDetail', { name: this.state.name });
     };
 
-
     render() {
         return (
             <section className="get-user-details">

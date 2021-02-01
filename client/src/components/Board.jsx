@@ -1,76 +1,93 @@
 import React from 'react';
-import Card from './Card';
-import { gCards } from '../cardsService';
+import { gCards } from '../gameService';
+import MyCards from "./MyCards";
+// import CenterCards from "./CenterCards";
+import { loadUser, loadGame } from '../store/actions/gameActions.js'
+import { connect } from 'react-redux';
 
 class Board extends React.Component {
-    render() {
-        var { socket, gameData } = this.props
-        var cards = gCards
-        console.log(gameData);
-        // game_status: "ongoing"
-        // game_winner: null
-        // playboard: []
-        // players: {_Ft02HHlvso5OhYcAAAE: {…}, f7cKboKqgogdJbz8AAAF: {…}}
-        // whose_turn: "_Ft02HHlvso5OhYcAAAE"
-        return 'board'
-        // return !cards ? 'loading' : (
-        //     <section className="board">
-        //         <section className="opponents">
-        //             {
-        //                  Object.keys(gameData.players).map((player, idx) => {
-        //                     return (
-        //                         <div key={idx} className="user">
-        //                             😄
-        //                             <p className="name">{player}</p>
-        //                             <p>score: {idx}</p>
-        //                         </div>
-        //                     )
-        //                 })
-        //             }
+    state = {
+        description: '',
+        card: null
+    }
 
-        //         </section>
-        //         {
-        //             gameData.isUserTurn ? <h3 className="description">{gameData.description} </h3>
-        //                 : <label>
-        //                     Enter your card description:
-        //                 <input
-        //                         type="text"
-        //                         value={description}
-        //                         onChange={event => setDescription(event.target.value)}
-        //                     />
-        //                 </label>
-        //         }
-        //         {!isChoosingMyCard &&
-        //             <section>
-        //                 <p>which card matches best to this description?</p>
-        //                 <section className="cards">
-        //                     {
-        //                         cards.map((card) => {
-        //                             return (<Card card={card} />)
-        //                         })
-        //                     }
-        //                 </section>
-        //             </section>
-        //         }
-        //         {isChoosingMyCard &&
-        //             <section>
-        //                 <div className="hidden-cards">
-        //                     <span>choose your card</span>
-        //                 </div>
-        //                 <section className="current-user">
-        //                     {
-        //                         cards.map((card) => {
-        //                             return (<Card card={card} />)
-        //                         })
-        //                     }
-        //                 </section>
-        //                 <button onClick={() => setIsChoosingMyCard(!isChoosingMyCard)}>OK</button>
-        //             </section>
-        //         }
-        //     </section>
-        // )
+    onChangeDescription = (event) => {
+        this.setState({ description: event.target.value });
+    };
+
+    onChangeCard = (id) => {
+        this.setState({ card: id });
+        //todo: show card was clicked
+    };
+
+    onEndTurn = () => {
+        this.props.socket.emit('endTurn', this.state);
+    };
+
+    render() {
+        var { gameData, user } = this.props
+        var cards = gCards
+        return !gameData ? 'loading' : (
+            <section className="board">
+                <section>
+                    <p>{user.name}</p>
+                    <p>score: 0</p>
+                </section>
+                <section className="opponents">
+                    {
+                        Object.keys(gameData.players).map((player, idx) => {
+                            return (
+                                <div key={player} className="user">
+                                    😄
+                                    <p className="name">{gameData.players[player].name}</p>
+                                    <p>score: 0</p>
+                                </div>
+                            )
+                        })
+                    }
+                </section>
+                {
+                    gameData.whoseTurn !== user.id ?
+                        gameData.board.description ?
+                            <h3 className="description">{gameData.board.description} </h3>
+
+                            : <h3 className="description">waiting for opponent to finish turn</h3>
+                        : <label>
+                            Enter your card description:
+                            <input
+                                type="text"
+                                value={this.state.description}
+                                onChange={event => this.onChangeDescription(event)}
+                            />
+                        </label>
+                }
+                {
+                    gameData.turnStatus === 'story teller input part' &&
+                        user.isStoryTeller ?
+                        <section>
+                            <MyCards cards={cards} onChangeCard={this.onChangeCard} />
+                            <button onClick={this.onEndTurn}>OK</button>
+                        </section>
+                        : 'wait- story teller is thinking'
+                }
+                {/* {
+                    <CenterCards cards={cards} onChangeCard={this.onChangeCard} />
+                } */}
+            </section>
+        )
     }
 }
 
+const mapStateToProps = (state) => {
+    return {
+        user:  state.game.user,
+        gameData: state.game.gameData
+    }
+}
 
-export default Board;
+const mapDispatchToProps = {
+    loadUser,
+    loadGame,
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Board);

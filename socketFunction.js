@@ -1,8 +1,8 @@
-var sockets = {}; // stores all the connected clients
-var games = {}; // stores the ongoing games
-var waitingRooms = {};// stores the ongoing waiting rooms
+var sockets = {}; // all connected clients
+var games = {}; // all ongoing games
+var waitingRooms = {};// ongoing waiting rooms
 
-//socket={id, name, is_playing, game_id}
+//socket={id, name, isPlaying, gameId}
 
 // Generate Game ID
 function uuidv4() {
@@ -13,10 +13,9 @@ function uuidv4() {
 }
 
 function socketFunction(client, io) {
-    client.emit('connected', { "id": client.id });
+    client.emit('connected', { "id": client.id });//todo: should id be with " "?
     // handle user registration 
     client.on('checkUserDetail', data => {
-        console.log('check detail got', data.name);
         var flag = false;
         //check if name already in sockets 
         for (var id in sockets) {
@@ -30,8 +29,9 @@ function socketFunction(client, io) {
             sockets[client.id] = {
                 id: client.id,
                 name: data.name,
-                is_playing: false,
-                game_id: null
+                waitingRoomId: null,
+                isPlaying: false,
+                gameId: null
             };
         }
         //todo: err msg - name taken
@@ -43,7 +43,7 @@ function socketFunction(client, io) {
     client.on('getOpponents', () => {
         var opponents = [];
         for (var id in sockets) {
-            if (id !== client.id && !sockets[id].is_playing) {
+            if (id !== client.id && !sockets[id].isPlaying) {
                 opponents.push({
                     id: id,
                     name: sockets[id].name,
@@ -51,68 +51,91 @@ function socketFunction(client, io) {
             }
         }
         client.emit('getOpponentsResponse', opponents);
-        //emit to other sockets that the client is on their list now
+        //send to other sockets that client is on their list now
         client.broadcast.emit('newOpponentAdded', {
             id: client.id,
             name: sockets[client.id].name,
         });
     });
 
-    // data={id:id}, todo: add to data waiting room id
-    client.on('inviteOpponent', data => {
+    client.on('inviteOpponent', opponentId => {
+        var roomId = sockets[client.id].waitingRoomId
+        if (!roomId) {
+            roomId = uuidv4();
+            waitingRooms[roomId] = {
+                id: roomId,
+                players: {}
+            };
+            waitingRooms[roomId].players[client.id] = sockets[client.id];
+            sockets[client.id].waitingRoomId = roomId;
+            client.join(waitingRooms[roomId]);
+        }
         let invitationDetails = {
-            to: data.id,
+            to: opponentId,
             from: client.id,
             inviter: sockets[client.id],
-        }
-        //send to specific user
-        console.log('server inviting');
-        io.to(invitationDetails.to).emit('receivedInvitation', invitationDetails);
+            waitingRoomId: roomId
+        };
+        //send to opponent
+        io.to(opponentId).emit('receivedInvitation', invitationDetails);
     });
 
-    //emits to inviting player
-    //emits socket object of accepting player
-    client.on('acceptInvitation', inviterId => {
-        console.log('server got ok from', client.id, 'to', inviterId);
-        io.to(inviterId).emit('invitationResponse', { answer: 'accept', opponent: sockets[client.id] });
+    //send to inviting player
+    client.on('acceptInvitation', invitationDetails => {
+        let { waitingRoomId } = invitationDetails
+        waitingRooms[waitingRoomId].players[client.id] = sockets[client.id];
+        sockets[client.id].waitingRoomId = waitingRoomId;
+        client.join(waitingRooms[waitingRoomId]);
+        let response = {
+            answer: 'accept',
+            opponent: sockets[client.id]
+        }
+        io.to(invitationDetails.from).emit('invitationResponse', response);
     })
 
-    //declineInvitation
-    // client.on('declineInvitation', data => {
-    //     let declining = sockets[client.id]
-    //     let waitingRoom = waitingRooms[declining.waitingRoom_id]
-    //     let payload = {
-    //         declining,
-    //         waitingRoom: waitingRoom,
-    //     }
-    //     io.to(declining.waitingRoom_id).emit('declineInvitationResponse', payload);
-    // })
+    client.on('declineInvitation', invitationDetails => {
+        let response = {
+            answer: 'decline',
+            opponent: sockets[client.id]
+        }
+        io.to(invitationDetails.from).emit('invitationResponse', response);
+    })
 
     client.on('startGame', data => {
-        console.log('starting game');
         //init game
-        var gameId = uuidv4();
-        sockets[data.id].is_playing = true;
-        sockets[client.id].is_playing = true;
-        sockets[data.id].game_id = gameId;
-        sockets[client.id].game_id = gameId;
-        games[gameId] = {
-            players: { 
-                [client.id]: sockets[client.id], 
-                [data.id]: sockets[data.id] 
+        let waitingRoomId = sockets[client.id].waitingRoomId
+        let players = waitingRooms[waitingRoomId].players
+        for (const playerId in players) {
+            sockets[playerId].isPlaying = true;
+            sockets[playerId].gameId = newGameId;
+            players[playerId].isStoryTeller = client.id === playerId; //client is the first story teller
+            players[playerId].score = 0;
+            players[playerId].isFinishedTurn = false;
+            players[playerId].cards = [];//todo: get random cards function
+        }
+        var newGameId = uuidv4();
+        //todo: add to player score, role,cards,
+        games[newGameId] = {
+            id: newGameId,
+            players: players,
+            board: {
+                description: '',
+                centerCards: []
             },
-            whose_turn: client.id,
-            playboard: [],
-            game_status: "ongoing", // "ongoing","won","draw"
-            game_winner: null, // winner_id if status won
+            playersCount: Object.keys(players).length-1,
+            winner: null, // winner id if status won
+            turnStatus: 'story teller input part'// listeners pick their matching card part ,  listeners vote part , votes and scores show part, add card to each player part
         };
-        io.emit('gameStarted', { status: true, game_id: gameId, game_data: games[gameId] });
-        // io.to(gameId).emit('gameStarted', { status: true, game_id: gameId, game_data: games[gameId] });
+        client.join(games[newGameId])
+        io.to(waitingRooms[waitingRoomId]).emit('gameStarted', games[newGameId]);
     })
 
-    client.on('joinGame', data => {
-        console.log('joining game');
-        client.join(data)//data=gameid
+    client.on('joinGame', gameId => {
+        client.join(games[gameId])
+    })
+
+    client.on('endTurn', turnData => {
+        console.log('turn ended', turnData);
     })
 }
 
