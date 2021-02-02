@@ -36,13 +36,15 @@ class Board extends React.Component {
                 <section className="opponents">
                     {
                         Object.keys(gameData.players).map((player, idx) => {
-                            return (
-                                <div key={player} className="user">
-                                    😄
-                                    <p className="name">{gameData.players[player].name}</p>
-                                    <p>score: 0</p>
-                                </div>
-                            )
+                            if (gameData.players[player].id !== user.id) {
+                                return (
+                                    <div key={player} className="user">
+                                        😄
+                                        <p className="name">{gameData.players[player].name}</p>
+                                        <p>score: 0</p>
+                                    </div>
+                                )
+                            }
                         })
                     }
                 </section>
@@ -65,7 +67,7 @@ class Board extends React.Component {
                     gameData.turnStatus === 'story teller input part' &&
                         user.isStoryTeller ?
                         <section>
-                            <MyCards cards={cards} onChangeCard={this.onChangeCard} />
+                            <MyCards cards={cards} onChangeCard={this.onChangeCard} selectedCard={this.state.card}/>
                             <button onClick={this.onEndTurn}>OK</button>
                         </section>
                         : 'wait- story teller is thinking'
@@ -80,7 +82,7 @@ class Board extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
-        user:  state.game.user,
+        user: state.game.user,
         gameData: state.game.gameData
     }
 }

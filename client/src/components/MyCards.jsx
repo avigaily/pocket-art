@@ -3,7 +3,7 @@ import Card from './Card';
 
 class MyCards extends React.Component {
     render() {
-        var { cards, onChangeCard } = this.props
+        var { cards, onChangeCard, selectedCard } = this.props
         return (
             <section className="my-cards">
                 <div className="hidden-cards">
@@ -12,7 +12,8 @@ class MyCards extends React.Component {
                 <section className="current-user">
                     {
                         cards.map((card) => {
-                            return (<Card card={card} onChangeCard={onChangeCard} />)
+                            var isSelected = selectedCard.id===card.id? 'selected': '';
+                            return (<Card card={card} onChangeCard={onChangeCard} isSelected={isSelected} />)
                         })
                     }
                 </section>

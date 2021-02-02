@@ -4,7 +4,11 @@ export default {
     // getGame
 }
 
-function getUser(name){
+function getUser(name,socket){
+   
+}
+
+function getGame(id,socket){
    
 }
 

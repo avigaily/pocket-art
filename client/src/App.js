@@ -4,6 +4,8 @@ import './App.css';
 import GetUserDetails from "./components/GetUserDetails";
 import CreateGame from "./components/CreateGame";
 import Board from "./components/Board";
+import { loadUser, loadGame } from '../store/actions/gameActions.js'
+import { connect } from 'react-redux';
 
 class App extends React.Component {
   state = {
@@ -66,4 +68,16 @@ class App extends React.Component {
   }
 }
 
-export default App;
+const mapStateToProps = (state) => {
+  return {
+      user: state.game.user,
+      gameData: state.game.gameData
+  }
+}
+
+const mapDispatchToProps = {
+  loadUser,
+  loadGame,
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
