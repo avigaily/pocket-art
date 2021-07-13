@@ -1,19 +1,13 @@
 import gameService from '../../gameService.js';
 
-export function loadGame(id) {
-  return dispatch => {
-    return gameService.getGame(id)
-      .then(gameData => {
-        dispatch({
-          type: 'SET_GAME',
-          gameData
-        })
-        return gameData
-      })
-  }
+export function setGame() {
+    return {
+      type: 'SET_GAME',
+      gameData
+    }
 }
 
-export function loadUser(name) {
+export function setUser(name) {
   return dispatch => {
     return gameService.getUser(name)
       .then(user => {

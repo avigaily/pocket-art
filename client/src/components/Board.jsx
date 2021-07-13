@@ -87,6 +87,12 @@ const mapStateToProps = (state) => {
     }
 }
 
+// function mapDispatchToProps(dispatch) {
+//     return {
+//         setConstructing: data => dispatch(setConstructing(data)),
+//     }
+// };
+
 const mapDispatchToProps = {
     loadUser,
     loadGame,

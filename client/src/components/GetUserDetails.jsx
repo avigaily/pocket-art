@@ -23,7 +23,7 @@ class GetUserDetails extends React.Component {
     };
 
     render() {
-        return (
+        return ( 
             <section className="get-user-details">
                 <form>
                     <label>
